@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <hal/Types.h>
-#include <wpi/sendable/Sendable.h>
+#include <networktables/NTSendable.h>
 #include <wpi/sendable/SendableHelper.h>
 
 namespace frc {
@@ -16,7 +16,7 @@ namespace frc {
  * Class for getting voltage, current, temperature, power and energy from the
  * CTRE Power Distribution Panel (PDP) or REV Power Distribution Hub (PDH).
  */
-class PowerDistribution : public wpi::Sendable,
+class PowerDistribution : public nt::NTSendable,
                           public wpi::SendableHelper<PowerDistribution> {
  public:
   static constexpr int kDefaultModule = -1;
@@ -212,11 +212,12 @@ class PowerDistribution : public wpi::Sendable,
 
   StickyFaults GetStickyFaults() const;
 
-  void InitSendable(wpi::SendableBuilder& builder) override;
+  void InitSendable(nt::NTSendableBuilder& builder) override;
 
  private:
   hal::Handle<HAL_PowerDistributionHandle> m_handle;
   int m_module;
+  double currents[24];
 };
 
 }  // namespace frc

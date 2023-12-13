@@ -9,7 +9,7 @@
 #include <hal/Ports.h>
 #include <hal/PowerDistribution.h>
 #include <wpi/StackTrace.h>
-#include <wpi/sendable/SendableBuilder.h>
+#include <networktables/NTSendableBuilder.h>
 #include <wpi/sendable/SendableRegistry.h>
 
 #include "frc/Errors.h"
@@ -204,16 +204,20 @@ PowerDistribution::StickyFaults PowerDistribution::GetStickyFaults() const {
   return stickyFaults;
 }
 
-void PowerDistribution::InitSendable(wpi::SendableBuilder& builder) {
+void PowerDistribution::InitSendable(nt::NTSendableBuilder& builder) {
   builder.SetSmartDashboardType("PowerDistribution");
   int numChannels = GetNumChannels();
-  // Use manual reads to avoid printing errors
+
+  builder.SetUpdateTable(
+      [numChannels, this]() mutable {
+        int32_t lStatus = 0;
+        HAL_GetPowerDistributionAllChannelCurrents(m_handle, currents, numChannels, &lStatus);
+      });
   for (int i = 0; i < numChannels; ++i) {
     builder.AddDoubleProperty(
         fmt::format("Chan{}", i),
-        [=, this] {
-          int32_t lStatus = 0;
-          return HAL_GetPowerDistributionChannelCurrent(m_handle, i, &lStatus);
+        [i, this] {
+          return currents[i];
         },
         nullptr);
   }

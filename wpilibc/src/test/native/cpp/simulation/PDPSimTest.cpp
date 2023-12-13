@@ -4,6 +4,9 @@
 
 #include "frc/simulation/PowerDistributionSim.h"  // NOLINT(build/include_order)
 
+#include <fmt/format.h>
+#include <frc/livewindow/LiveWindow.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <gtest/gtest.h>
 #include <hal/HAL.h>
 
@@ -92,12 +95,16 @@ TEST(PowerDistributionSimTest, GetAllCurrents) {
   }
 
   // run it
-  std::vector<double> currents = pdp.GetAllCurrents();
+  frc::SmartDashboard::PutData(&pdp);
+  frc::LiveWindow::SetEnabled(true);
+  frc::LiveWindow::UpdateValues();
 
   // verify
   for (int channel = 0; channel < pdp.GetNumChannels(); ++channel) {
+    double value = frc::SmartDashboard::GetNumber(
+            fmt::format("PowerDistribution[2]/Chan{}", channel), -1);
     const double kTestCurrent = 24 - channel;
-    EXPECT_EQ(kTestCurrent, currents[channel]);
+    EXPECT_EQ(kTestCurrent, value);
   }
 }
 

@@ -10,6 +10,8 @@ import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.hal.PowerDistributionJNI;
 import edu.wpi.first.hal.PowerDistributionStickyFaults;
 import edu.wpi.first.hal.PowerDistributionVersion;
+import edu.wpi.first.networktables.NTSendable;
+import edu.wpi.first.networktables.NTSendableBuilder;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -18,7 +20,7 @@ import edu.wpi.first.util.sendable.SendableRegistry;
  * Class for getting voltage, current, temperature, power and energy from the CTRE Power
  * Distribution Panel (PDP) or REV Power Distribution Hub (PDH) over CAN.
  */
-public class PowerDistribution implements Sendable, AutoCloseable {
+public class PowerDistribution implements NTSendable, AutoCloseable {
   private final int m_handle;
   private final int m_module;
 
@@ -206,13 +208,15 @@ public class PowerDistribution implements Sendable, AutoCloseable {
   }
 
   @Override
-  public void initSendable(SendableBuilder builder) {
+  public void initSendable(NTSendableBuilder builder) {
     builder.setSmartDashboardType("PowerDistribution");
     int numChannels = getNumChannels();
+    double[] currents = new double[numChannels];
+    builder.setUpdateTable(() -> PowerDistributionJNI.getAllCurrents(m_handle, currents));
     for (int i = 0; i < numChannels; ++i) {
       final int chan = i;
       builder.addDoubleProperty(
-          "Chan" + i, () -> PowerDistributionJNI.getChannelCurrentNoError(m_handle, chan), null);
+          "Chan" + i, () -> currents[chan], null);
     }
     builder.addDoubleProperty(
         "Voltage", () -> PowerDistributionJNI.getVoltageNoError(m_handle), null);

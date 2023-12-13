@@ -213,8 +213,7 @@ public class PowerDistribution implements NTSendable, AutoCloseable {
     builder.setUpdateTable(() -> PowerDistributionJNI.getAllCurrents(m_handle, currents));
     for (int i = 0; i < numChannels; ++i) {
       final int chan = i;
-      builder.addDoubleProperty(
-          "Chan" + i, () -> currents[chan], null);
+      builder.addDoubleProperty("Chan" + i, () -> currents[chan], null);
     }
     builder.addDoubleProperty(
         "Voltage", () -> PowerDistributionJNI.getVoltageNoError(m_handle), null);

@@ -24,7 +24,7 @@ class PowerDistributionTest {
     for (int i = 0; i < pdp.getNumChannels(); i++) {
       sim.setCurrent(i, 24 - i);
     }
-    
+
     SmartDashboard.putData(pdp);
     LiveWindow.setEnabled(true);
     LiveWindow.updateValues();

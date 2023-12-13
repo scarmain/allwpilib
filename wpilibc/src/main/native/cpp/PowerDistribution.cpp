@@ -8,8 +8,8 @@
 #include <hal/FRCUsageReporting.h>
 #include <hal/Ports.h>
 #include <hal/PowerDistribution.h>
-#include <wpi/StackTrace.h>
 #include <networktables/NTSendableBuilder.h>
+#include <wpi/StackTrace.h>
 #include <wpi/sendable/SendableRegistry.h>
 
 #include "frc/Errors.h"
@@ -208,18 +208,14 @@ void PowerDistribution::InitSendable(nt::NTSendableBuilder& builder) {
   builder.SetSmartDashboardType("PowerDistribution");
   int numChannels = GetNumChannels();
 
-  builder.SetUpdateTable(
-      [numChannels, this]() mutable {
-        int32_t lStatus = 0;
-        HAL_GetPowerDistributionAllChannelCurrents(m_handle, currents, numChannels, &lStatus);
-      });
+  builder.SetUpdateTable([numChannels, this]() mutable {
+    int32_t lStatus = 0;
+    HAL_GetPowerDistributionAllChannelCurrents(m_handle, currents, numChannels,
+                                               &lStatus);
+  });
   for (int i = 0; i < numChannels; ++i) {
     builder.AddDoubleProperty(
-        fmt::format("Chan{}", i),
-        [i, this] {
-          return currents[i];
-        },
-        nullptr);
+        fmt::format("Chan{}", i), [i, this] { return currents[i]; }, nullptr);
   }
   builder.AddDoubleProperty(
       "Voltage",

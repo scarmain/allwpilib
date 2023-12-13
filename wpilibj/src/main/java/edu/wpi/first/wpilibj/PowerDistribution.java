@@ -12,8 +12,6 @@ import edu.wpi.first.hal.PowerDistributionStickyFaults;
 import edu.wpi.first.hal.PowerDistributionVersion;
 import edu.wpi.first.networktables.NTSendable;
 import edu.wpi.first.networktables.NTSendableBuilder;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 
 /**

@@ -14,16 +14,29 @@ import java.util.Objects;
  */
 @SuppressWarnings("MemberName")
 public class Color {
+  /** Value between (0-1). */
   public final double red;
+
+  /** Value between (0-1). */
   public final double green;
+
+  /** Value between (0-1). */
   public final double blue;
+
+  /** Value between [0-180). */
+  public final double hue;
+
+  /** Value between [0-255]. */
+  public final double sat;
+
+  /** Value between [0-255]. */
+  public final double value;
+
   private String m_name;
 
   /** Constructs a default color (black). */
   public Color() {
-    red = 0.0;
-    green = 0.0;
-    blue = 0.0;
+    this(0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -34,10 +47,7 @@ public class Color {
    * @param blue Blue value (0-1)
    */
   public Color(double red, double green, double blue) {
-    this.red = roundAndClamp(red);
-    this.green = roundAndClamp(green);
-    this.blue = roundAndClamp(blue);
-    this.m_name = null;
+    this(red, green, blue, null);
   }
 
   /**
@@ -66,12 +76,58 @@ public class Color {
    * @param red Red value (0-1)
    * @param green Green value (0-1)
    * @param blue Blue value (0-1)
+   * @param name Name of color
    */
   private Color(double red, double green, double blue, String name) {
     this.red = roundAndClamp(red);
     this.green = roundAndClamp(green);
     this.blue = roundAndClamp(blue);
     this.m_name = name;
+
+    // calc HSV values
+    // based on (python code): https://math.stackexchange.com/a/3954976
+    double min = Math.min(Math.min(red, green), blue);
+    double max = Math.max(Math.max(red, green), blue);
+    double sat;
+    double hue;
+    if (max == 0) {
+      sat = 0;
+      hue = 0;
+    } else {
+      sat = ((max - min) / max) * 255.0;
+      if (max == red) {
+        hue = ((green - blue) / (max - min)) * 30.0;
+        if (hue < 0) {
+          hue += 180;
+        }
+      } else if (max == green) {
+        hue = (((blue - red) / (max - min)) + 2) * 30.0;
+      } else { // blue
+        hue = (((red - green) / (max - min)) + 4) * 30.0;
+      }
+    }
+    this.hue = hue;
+    this.sat = sat;
+    this.value = max * 255.0;
+  }
+
+  /**
+   * Used for the fromHSV function to not due the HSV math again.
+   *
+   * @param r Red
+   * @param g Green
+   * @param b Blue
+   * @param h Hue
+   * @param s Sat
+   * @param v Value
+   */
+  private Color(double r, double g, double b, double h, double s, double v) {
+    red = r;
+    green = g;
+    blue = b;
+    hue = h;
+    sat = s;
+    value = v;
   }
 
   /**
@@ -81,13 +137,7 @@ public class Color {
    * @throws IllegalArgumentException if the hex string is invalid.
    */
   public Color(String hexString) {
-    if (hexString.length() != 7 || !hexString.startsWith("#")) {
-      throw new IllegalArgumentException("Invalid hex string \"" + hexString + "\"");
-    }
-
-    this.red = Integer.valueOf(hexString.substring(1, 3), 16) / 255.0;
-    this.green = Integer.valueOf(hexString.substring(3, 5), 16) / 255.0;
-    this.blue = Integer.valueOf(hexString.substring(5, 7), 16) / 255.0;
+    this(new Color8Bit(hexString));
   }
 
   /**
@@ -106,33 +156,35 @@ public class Color {
     // that changes (X) from low to high (X+m) or high to low (v-X)
 
     // Difference between highest and lowest value of any rgb component
-    final int chroma = (s * v) / 255;
+    final double chroma = (s * v) / 255.0;
+
+    // Remainder converted from 0-30 to 0-255
+    final double remainder = (h % 30) * (255 / 30.0);
+
+    // Value of the lowest rgb component
+    final double m = (v - chroma) / 255.0;
+
+    // Goes from 0 to chroma as hue increases
+    final double X = (chroma * remainder) / (255.0 * 255);
+
+    // need to scale to 0-1 range
+    final double V = v / 255.0;
 
     // Because hue is 0-180 rather than 0-360 use 30 not 60
     final int region = (h / 30) % 6;
-
-    // Remainder converted from 0-30 to 0-255
-    final int remainder = (int) Math.round((h % 30) * (255 / 30.0));
-
-    // Value of the lowest rgb component
-    final int m = v - chroma;
-
-    // Goes from 0 to chroma as hue increases
-    final int X = (chroma * remainder) >> 8;
-
     switch (region) {
       case 0:
-        return new Color(v, X + m, m);
+        return new Color(V, X + m, m, h, s, v);
       case 1:
-        return new Color(v - X, v, m);
+        return new Color(V - X, V, m, h, s, v);
       case 2:
-        return new Color(m, v, X + m);
+        return new Color(m, V, X + m, h, s, v);
       case 3:
-        return new Color(m, v - X, v);
+        return new Color(m, V - X, V, h, s, v);
       case 4:
-        return new Color(X + m, m, v);
+        return new Color(X + m, m, V, h, s, v);
       default:
-        return new Color(v, m, v - X);
+        return new Color(V, m, V - X, h, s, v);
     }
   }
 

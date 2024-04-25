@@ -6,6 +6,9 @@ package edu.wpi.first.wpilibj.examples.apriltagsvision;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
@@ -17,6 +20,8 @@ import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -38,11 +43,20 @@ public class Robot extends TimedRobot {
   }
 
   void apriltagVisionThreadProc() {
+    AprilTagFieldLayout aprilTagFieldLayout;
+    try {
+      aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.kDefaultField.m_resourceFile);
+    } catch (IOException e) {
+      // should never fail, as WpiLib always provides this file
+      return;
+    }
+    aprilTagFieldLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+
     var detector = new AprilTagDetector();
     // look for tag36h11, correct 1 error bit (hamming distance 1)
     // hamming 1 allocates 781KB, 2 allocates 27.4 MB, 3 allocates 932 MB
     // max of 1 recommended for RoboRIO 1, while hamming 2 is feasible on the RoboRIO 2
-    detector.addFamily("tag36h11", 1);
+    detector.addFamily(aprilTagFieldLayout.getAprilTagFamily(), 1);
 
     // Set up Pose Estimator - parameters are for a Microsoft Lifecam HD-3000
     // (https://www.chiefdelphi.com/t/wpilib-apriltagdetector-sample-code/421411/21)
@@ -124,7 +138,7 @@ public class Robot extends TimedRobot {
             3);
 
         // determine pose
-        Transform3d pose = estimator.estimate(detection);
+        Transform3d pose = estimator.estimate(detection, aprilTagFieldLayout.getTagSize(detection.getId()));
 
         // put pose into dashboard
         Rotation3d rot = pose.getRotation();

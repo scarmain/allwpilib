@@ -15,7 +15,7 @@ public class AprilTagPoseEstimator {
     /**
      * Creates a pose estimator configuration.
      *
-     * @param tagSize tag size, in meters
+     * @param tagSize default tag size, in meters
      * @param fx camera horizontal focal length, in pixels
      * @param fy camera vertical focal length, in pixels
      * @param cx camera horizontal focal center, in pixels
@@ -178,7 +178,20 @@ public class AprilTagPoseEstimator {
    * @return Pose estimate
    */
   public Transform3d estimate(AprilTagDetection detection) {
-    return estimate(detection.getHomography(), detection.getCorners());
+    return estimate(detection.getHomography(), detection.getCorners(), m_config.tagSize);
+  }
+
+  /**
+   * Estimates tag pose. This method is an easier to use interface to
+   * EstimatePoseOrthogonalIteration(), running 50 iterations and returning the pose with the lower
+   * object-space error.
+   *
+   * @param detection Tag detection
+   * @param tagSiz The Tag's size in meters
+   * @return Pose estimate
+   */
+  public Transform3d estimate(AprilTagDetection detection, double tagSize) {
+    return estimate(detection.getHomography(), detection.getCorners(), tagSize);
   }
 
   /**
@@ -190,9 +203,9 @@ public class AprilTagPoseEstimator {
    * @param corners Corner point array (X and Y for each corner in order)
    * @return Pose estimate
    */
-  public Transform3d estimate(double[] homography, double[] corners) {
+  public Transform3d estimate(double[] homography, double[] corners, double tagSize) {
     return AprilTagJNI.estimatePose(
-        homography, corners, m_config.tagSize, m_config.fx, m_config.fy, m_config.cx, m_config.cy);
+        homography, corners, tagSize, m_config.fx, m_config.fy, m_config.cx, m_config.cy);
   }
 
   private final Config m_config;

@@ -90,9 +90,10 @@ public class AprilTagFieldLayout {
    * @param apriltags List of {@link AprilTag}.
    * @param fieldLength Length of the field the layout is representing in meters.
    * @param fieldWidth Width of the field the layout is representing in meters.
+   * @param tagFamily What AprilTag family the field uses
    */
-  public AprilTagFieldLayout(List<AprilTag> apriltags, double fieldLength, double fieldWidth) {
-    this(apriltags, new FieldDimensions(fieldLength, fieldWidth));
+  public AprilTagFieldLayout(List<AprilTag> apriltags, double fieldLength, double fieldWidth, String tagFamily) {
+    this(apriltags, new FieldDimensions(fieldLength, fieldWidth, tagFamily));
   }
 
   @JsonCreator
@@ -118,6 +119,17 @@ public class AprilTagFieldLayout {
   }
 
   /**
+   * Returns a List of the {@link AprilTag AprilTags} used in this layout.
+   *
+   * @param id The ID of the tag
+   * @return The size in meters of the tag
+   */
+  @JsonIgnore
+  public double getTagSize(int id) {
+    return m_apriltags.get(id).size;
+  }
+
+  /**
    * Returns the length of the field the layout is representing in meters.
    *
    * @return length, in meters
@@ -135,6 +147,16 @@ public class AprilTagFieldLayout {
   @JsonIgnore
   public double getFieldWidth() {
     return m_fieldDimensions.fieldWidth;
+  }
+
+  /**
+   * Returns what AprilTag family the field uses
+   *
+   * @return The familty that the tag uses
+   */
+  @JsonIgnore
+  public String getAprilTagFamily() {
+    return m_fieldDimensions.aprilTagFamily;
   }
 
   /**
@@ -242,7 +264,8 @@ public class AprilTagFieldLayout {
     return new AprilTagFieldLayout(
         field.m_fieldLayout.getTags(),
         field.m_fieldLayout.getFieldLength(),
-        field.m_fieldLayout.getFieldWidth());
+        field.m_fieldLayout.getFieldWidth(),
+        field.m_fieldLayout.getAprilTagFamily());
   }
 
   /**
@@ -294,12 +317,18 @@ public class AprilTagFieldLayout {
     @JsonProperty(value = "width")
     public double fieldWidth;
 
+    @SuppressWarnings("MemberName")
+    @JsonProperty(value = "tagFamily")
+    public String aprilTagFamily;
+
     @JsonCreator()
     FieldDimensions(
         @JsonProperty(required = true, value = "length") double fieldLength,
-        @JsonProperty(required = true, value = "width") double fieldWidth) {
+        @JsonProperty(required = true, value = "width") double fieldWidth,
+        @JsonProperty(required = true, value = "tagFamily") String aprilTagFamily) {
       this.fieldLength = fieldLength;
       this.fieldWidth = fieldWidth;
+      this.aprilTagFamily = aprilTagFamily;
     }
   }
 }

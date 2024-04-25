@@ -22,6 +22,10 @@ public class AprilTag {
   @JsonProperty(value = "pose")
   public Pose3d pose;
 
+  /** The tag's size in meters. */
+  @JsonProperty(value = "size")
+  public double size;
+
   /**
    * Constructs an AprilTag.
    *
@@ -32,9 +36,11 @@ public class AprilTag {
   @JsonCreator
   public AprilTag(
       @JsonProperty(required = true, value = "ID") int ID,
-      @JsonProperty(required = true, value = "pose") Pose3d pose) {
+      @JsonProperty(required = true, value = "pose") Pose3d pose,
+      @JsonProperty(required = false, value = "size", defaultValue = "0.1651") double size) {
     this.ID = ID;
     this.pose = pose;
+    this.size = size;
   }
 
   @Override

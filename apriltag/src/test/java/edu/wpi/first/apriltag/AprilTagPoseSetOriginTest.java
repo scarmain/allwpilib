@@ -19,15 +19,15 @@ class AprilTagPoseSetOriginTest {
     var layout =
         new AprilTagFieldLayout(
             List.of(
-                new AprilTag(1, new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0))),
+                new AprilTag(1, new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)), 0.1651),
                 new AprilTag(
                     2,
                     new Pose3d(
                         new Translation3d(
                             Units.feetToMeters(4.0), Units.feetToMeters(4), Units.feetToMeters(4)),
-                        new Rotation3d(0, 0, Units.degreesToRadians(180))))),
+                        new Rotation3d(0, 0, Units.degreesToRadians(180))), 0.1651)),
             Units.feetToMeters(54.0),
-            Units.feetToMeters(27.0));
+            Units.feetToMeters(27.0),"tag36h11");
     layout.setOrigin(AprilTagFieldLayout.OriginPosition.kRedAllianceWallRightSide);
 
     assertEquals(

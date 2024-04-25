@@ -20,10 +20,11 @@ class AprilTagSerializationTest {
     var layout =
         new AprilTagFieldLayout(
             List.of(
-                new AprilTag(1, new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0))),
-                new AprilTag(3, new Pose3d(0, 1, 0, new Rotation3d(0, 0, 0)))),
+                new AprilTag(1, new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0)), 0.1651),
+                new AprilTag(3, new Pose3d(0, 1, 0, new Rotation3d(0, 0, 0)), 0.1651)),
             Units.feetToMeters(54.0),
-            Units.feetToMeters(27.0));
+            Units.feetToMeters(27.0),
+            "tag36h11");
 
     var objectMapper = new ObjectMapper();
 
